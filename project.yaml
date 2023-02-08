@@ -16,27 +16,24 @@ schema:
   file: ./schema.graphql
 network:
   # The genesis hash of the network (hash of block 0)
-  chainId: "0x3920bcb4960a1eef5580cd5367ff3f430eef052774f78468852f7b9cb39f8a3c"
+  chainId: "0x5bb3fd2d64a4b9fd9917f651ed47f79fd488d859daebfaa1a6d3c0e662b4d0a9"
   # This endpoint must be a public non-pruned archive node
   # Public nodes may be rate limited, which can affect indexing speed
   # When developing your project we suggest getting a private API key
   # You can get them from OnFinality for free https://app.onfinality.io
   # https://documentation.onfinality.io/support/the-enhanced-api-service
-  endpoint: "wss://mainnet-jp-1.polkadex.trade"
+  endpoint: "ws://host.docker.internal:9944"
   # Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
 #  dictionary: "https://api.subquery.network/sq/subquery/polkadot-dictionary"
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 3342600
+    startBlock: 1
     mapping:
       file: ./dist/index.js
       handlers:
-        - handler: handleBlock
-          kind: substrate/BlockHandler
-#        - handler: handleEvent
-#          kind: substrate/EventHandler
-#          filter:
-#            module: balances
-#            method: Deposit
+        - handler: handleTheaEvents
+          kind: substrate/EventHandler
+          filter:
+            module: thea
 #        - handler: handleCall
 #          kind: substrate/CallHandler
