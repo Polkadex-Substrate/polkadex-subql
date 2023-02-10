@@ -6,46 +6,48 @@
 
 type Account @entity {
 
-  id: ID!
+    id: ID!
 
-  thea_deposits: [TheaDeposit] @derivedFrom(field: "from")
+    thea_deposits: [TheaDeposit] @derivedFrom(field: "from")
 
-  thea_withdrawals: [TheaWithdrawal] @derivedFrom(field: "from")
+    thea_withdrawals: [TheaWithdrawal] @derivedFrom(field: "from")
 
 }
 
 type TheaDeposit @entity {
 
-  id: ID!
+    id: ID!
 
-  network_id: Int
+    network_id: Int
 
-  amount: BigInt
+    amount: BigInt
 
-  asset_id: BigInt
+    asset_id: BigInt
 
-  to: Account!
+    to: Account!
 
-  from: Account!
+    from: Account!
 
-  status:String!
+    status:String!
 
 }
 
 type TheaWithdrawal @entity {
 
-  id: ID!
+    id: ID!
 
-  network_id: Int
+    network_id: Int
 
-  amount: BigInt
+    amount: BigInt!
 
-  asset_id: BigInt
+    asset_id: BigInt
 
-  to: Account!
+    to: Account!
 
-  from: Account!
+    from: Account!
 
-  status: String!
+    status: String!
+
+    index: String!
 
 }
