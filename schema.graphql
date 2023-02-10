@@ -18,7 +18,7 @@ type TheaDeposit @entity {
 
     id: ID!
 
-    timestamp: Int!
+    timestamp: String!
 
     blockHash: String!
 
@@ -40,7 +40,7 @@ type TheaWithdrawal @entity {
 
     id: ID!
 
-    timestamp: Int!
+    timestamp: String!
 
     blockHash: String!
 
@@ -58,4 +58,5 @@ type TheaWithdrawal @entity {
 
     index: String!
 
+    nonce: String!
 }

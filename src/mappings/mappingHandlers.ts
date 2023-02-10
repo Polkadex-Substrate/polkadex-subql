@@ -50,7 +50,7 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
         depositRecord.toId = (recipient as AccountId32).toString();
         depositRecord.network_id = (chain_id as u8).toNumber();
         depositRecord.status = Status.APPROVED
-        depositRecord.timestamp = block.timestamp.getTime()
+        depositRecord.timestamp = block.timestamp.getTime().toString()
         depositRecord.blockHash = block.block.hash.toString()
         await depositRecord.save();
     }
@@ -70,8 +70,10 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
         withdrawalRecord.toId = beneficiary.toString();
         withdrawalRecord.index = (index as u32).toString()
         withdrawalRecord.status = Status.QUEUED
-        withdrawalRecord.timestamp = block.timestamp.getTime()
+        withdrawalRecord.timestamp = block.timestamp.getTime().toString()
         withdrawalRecord.blockHash = block.block.hash.toString()
+        withdrawalRecord.nonce = withdrawal_nonce.toString()
+        // withdrawalRecord.network_id must be also emitted
         await withdrawalRecord.save();
     } else if (method === TheaEvents.WithdrawalReady) {
         let [network_id, nonce] = data;
