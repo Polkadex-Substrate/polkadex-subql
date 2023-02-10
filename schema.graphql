@@ -18,6 +18,10 @@ type TheaDeposit @entity {
 
     id: ID!
 
+    timestamp: Int!
+
+    blockHash: String!
+
     network_id: Int
 
     amount: BigInt
@@ -35,6 +39,10 @@ type TheaDeposit @entity {
 type TheaWithdrawal @entity {
 
     id: ID!
+
+    timestamp: Int!
+
+    blockHash: String!
 
     network_id: Int
 

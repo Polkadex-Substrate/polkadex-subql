@@ -22,7 +22,8 @@ const Status = {
     APPROVED: "APPROVED",
     CLAIMED: "CLAIMED",
     READY: "READY",
-    EXECUTED: "EXECUTED"
+    EXECUTED: "EXECUTED",
+    QUEUED: "QUEUED"
 }
 
 export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
@@ -30,8 +31,9 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
         event: {
             data, method, section
         },
+        block
     } = event;
-    logger.info("THEA EVENT: " + JSON.stringify({method, section, data}));
+    logger.info("THEA EVENT: " + JSON.stringify({method, section, data, block}));
 
     //deposit approved by thea relayers
     if (method === TheaEvents.DepositApproved) {
@@ -48,6 +50,8 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
         depositRecord.toId = (recipient as AccountId32).toString();
         depositRecord.network_id = (chain_id as u8).toNumber();
         depositRecord.status = Status.APPROVED
+        depositRecord.timestamp = block.timestamp.getTime()
+        depositRecord.blockHash = block.block.hash.toString()
         await depositRecord.save();
     }
     //Deposit is claimed on native chain
@@ -65,6 +69,9 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
         withdrawalRecord.fromId = user.toString();
         withdrawalRecord.toId = beneficiary.toString();
         withdrawalRecord.index = (index as u32).toString()
+        withdrawalRecord.status = Status.QUEUED
+        withdrawalRecord.timestamp = block.timestamp.getTime()
+        withdrawalRecord.blockHash = block.block.hash.toString()
         await withdrawalRecord.save();
     } else if (method === TheaEvents.WithdrawalReady) {
         let [network_id, nonce] = data;
