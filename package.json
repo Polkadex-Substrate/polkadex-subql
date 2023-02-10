@@ -31,7 +31,7 @@
     "ipfs-unixfs": "6.0.6"
   },
   "dependencies": {
-    "@polkadex/api-wrapper": "^1.1.11",
+    "@polkadex/api-wrapper": "^1.1.27",
     "@polkadot/types-codec": "^9.12.1"
   }
 }
