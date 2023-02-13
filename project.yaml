@@ -16,7 +16,7 @@ schema:
   file: ./schema.graphql
 network:
   # The genesis hash of the network (hash of block 0)
-  chainId: "0xae5e8e5ca62722a88c44abed615877adda1e9e411c9ba249d866a6a9380634e9"
+  chainId: "0x14348a48d3e91779778dd83cddf8ad549e264c195a0dff462ed89c7b5ab83a05"
   # This endpoint must be a public non-pruned archive node
   # Public nodes may be rate limited, which can affect indexing speed
   # When developing your project we suggest getting a private API key
@@ -28,7 +28,7 @@ network:
 #  dictionary: "https://api.subquery.network/sq/subquery/polkadot-dictionary"
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 2750
+    startBlock: 260
     mapping:
       file: ./dist/index.js
       handlers:

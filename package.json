@@ -32,6 +32,8 @@
   },
   "dependencies": {
     "@polkadex/api-wrapper": "^1.1.27",
-    "@polkadot/types-codec": "^9.12.1"
+    "@polkadot/types-codec": "^9.12.1",
+    "@polkadot/util": "^10.4.1",
+    "@polkadot/util-crypto": "^10.4.1"
   }
 }

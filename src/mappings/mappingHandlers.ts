@@ -27,7 +27,7 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
         },
         block
     } = event;
-    logger.info("THEA EVENT: " + JSON.stringify({method, section, data, block}));
+    logger.info("THEA EVENT: " + JSON.stringify({method, section, data}));
 
     //deposit approved by thea relayers
     if (method === TheaEvents.DepositApproved) {

@@ -2,6 +2,8 @@ import {SubstrateBlock} from "@subql/types";
 import {TheaWithdrawal} from "../types";
 import {u128, u32, u8} from "@polkadot/types-codec";
 import {Status} from "./types";
+import * as utils from "@polkadot/util"
+import {encodeAddress} from "@polkadot/util-crypto";
 
 type WithdrawalStatusConfig = {
     network_id: string;
@@ -14,6 +16,7 @@ export const updateWithdrawalsStatus = async (params: WithdrawalStatusConfig) =>
     // Query blockchain for addressees
     const readyWithdrawals = await api.query.thea.readyWithdrawls(network_id.toString(), nonce.toString())
     const addresses: string[] = readyWithdrawals.map(elem => elem.beneficiary.toString())
+    logger.info(JSON.stringify(readyWithdrawals))
 
     // update the withdrawal status of all these to ready
     const promises = addresses.map(async (addr, i) => {
@@ -21,15 +24,18 @@ export const updateWithdrawalsStatus = async (params: WithdrawalStatusConfig) =>
         let withdrawalRecord = await TheaWithdrawal.get(index)
         if (!withdrawalRecord) {
             const {amount, assetId, beneficiary, index, network} = readyWithdrawals[i];
+            //FIXME: the address of the user should me emitter with the event/ added in ready storage.
+            //should not be defaulted to the beneficiary address
+            let user = encodeAddress(beneficiary, 88)
             const id = getWithdrawalId({
-                user: beneficiary.toString(),
+                user: user.toString(),
                 withdrawal_nonce: nonce.toString(),
                 index: i.toString()
             })
             withdrawalRecord = new TheaWithdrawal(id);
             withdrawalRecord.amount = (amount as u128).toBigInt();
             withdrawalRecord.asset_id = (assetId as u128).toBigInt();
-            withdrawalRecord.fromId = beneficiary.toString();
+            withdrawalRecord.fromId = user.toString();
             withdrawalRecord.toId = beneficiary.toString();
             withdrawalRecord.index = (index as u32).toString()
             withdrawalRecord.timestamp = block.timestamp.getTime().toString()
