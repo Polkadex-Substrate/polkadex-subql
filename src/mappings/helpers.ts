@@ -18,15 +18,15 @@ export const updateWithdrawalsStatus = async (params: WithdrawalStatusConfig) =>
     // update the withdrawal status of all these to ready
     const promises = addresses.map(async (addr, i) => {
         const index = addr + nonce.toString() + i.toString()
-        const withdrawal = await TheaWithdrawal.get(index)
-        if (!withdrawal) {
+        let withdrawalRecord = await TheaWithdrawal.get(index)
+        if (!withdrawalRecord) {
             const {amount, assetId, beneficiary, index, network} = readyWithdrawals[i];
             const id = getWithdrawalId({
                 user: beneficiary.toString(),
                 withdrawal_nonce: nonce.toString(),
                 index: i.toString()
             })
-            let withdrawalRecord = new TheaWithdrawal(id);
+            withdrawalRecord = new TheaWithdrawal(id);
             withdrawalRecord.amount = (amount as u128).toBigInt();
             withdrawalRecord.asset_id = (assetId as u128).toBigInt();
             withdrawalRecord.fromId = beneficiary.toString();
@@ -37,8 +37,8 @@ export const updateWithdrawalsStatus = async (params: WithdrawalStatusConfig) =>
             withdrawalRecord.nonce = nonce.toString()
             withdrawalRecord.network_id= (network as u8).toNumber()
         }
-        withdrawal.status = status
-        await withdrawal.save()
+        withdrawalRecord.status = status
+        await withdrawalRecord.save()
     })
     await Promise.all(promises)
 }
