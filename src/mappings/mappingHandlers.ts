@@ -2,6 +2,8 @@ import {SubstrateEvent,} from "@subql/types";
 import {Account, TheaDeposit, TheaWithdrawal} from "../types";
 import {AccountId32, Balance, H256} from "@polkadot/types/interfaces";
 import {u128, u32, u8} from "@polkadot/types-codec"
+import {Status} from "./types";
+import {getWithdrawalId, updateWithdrawalsStatus} from "./helpers";
 
 const TheaEvents = {
     /// Deposit Approved event ( chain_id, recipient, asset_id, amount, tx_hash(foreign chain))
@@ -16,14 +18,6 @@ const TheaEvents = {
     WithdrawalExecuted: "WithdrawalExecuted",
     /// Withdrawal Fee Set (NetworkId, Amount)
     WithdrawalFeeSet: "WithdrawalFeeSet"
-}
-
-const Status = {
-    APPROVED: "APPROVED",
-    CLAIMED: "CLAIMED",
-    READY: "READY",
-    EXECUTED: "EXECUTED",
-    QUEUED: "QUEUED"
 }
 
 export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
@@ -61,8 +55,12 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
         depositRecord.status = Status.CLAIMED;
         await depositRecord.save();
     } else if (method === TheaEvents.WithdrawalQueued) {
-        let [user, beneficiary, asset_id, amount, withdrawal_nonce, index] = data;
-        const id = user.toString() + withdrawal_nonce.toString() + index.toString()
+        let [network_id, user, beneficiary, asset_id, amount, withdrawal_nonce, index] = data;
+        const id = getWithdrawalId({
+            user: user.toString(),
+            withdrawal_nonce: withdrawal_nonce.toString(),
+            index: index.toString()
+        })
         let withdrawalRecord = new TheaWithdrawal(id);
         withdrawalRecord.amount = (amount as Balance).toBigInt();
         withdrawalRecord.asset_id = (asset_id as u128).toBigInt();
@@ -73,39 +71,23 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
         withdrawalRecord.timestamp = block.timestamp.getTime().toString()
         withdrawalRecord.blockHash = block.block.hash.toString()
         withdrawalRecord.nonce = withdrawal_nonce.toString()
-        // withdrawalRecord.network_id must be also emitted
+        withdrawalRecord.network_id = (network_id as u32).toNumber()
         await withdrawalRecord.save();
     } else if (method === TheaEvents.WithdrawalReady) {
         let [network_id, nonce] = data;
-        await updateWithdrawalsStatus(network_id.toString(), nonce.toString(), "READY")
+        await updateWithdrawalsStatus({
+            network_id: network_id.toString(),
+            nonce: nonce.toString(),
+            status: "READY",
+            block
+        })
     } else if (method === TheaEvents.WithdrawalExecuted) {
         let [nonce, network_id, tx_hash] = data;
-        await updateWithdrawalsStatus(network_id.toString(), nonce.toString(), "EXECUTED")
+        await updateWithdrawalsStatus({
+            network_id: network_id.toString(),
+            nonce: nonce.toString(),
+            status: "EXECUTED",
+            block
+        })
     }
 }
-
-const updateWithdrawalsStatus = async (network_id: string, nonce: string, status: keyof typeof Status) => {
-    // Query blockchain for addressees
-    const readyWithdrawals = await api.query.thea.readyWithdrawls(network_id.toString(), nonce.toString())
-    const addresses: string[] = readyWithdrawals.map(elem => elem.beneficiary.toString())
-
-    // update the withdrawal status of all these to ready
-    const promises = addresses.map(async (addr, i) => {
-        const index = addr + nonce.toString() + i.toString()
-        const withdrawal = await TheaWithdrawal.get(index)
-        withdrawal.status = status
-        await withdrawal.save()
-    })
-    await Promise.all(promises)
-}
-//
-// export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
-//   const record = await StarterEntity.get(
-//     extrinsic.block.block.header.hash.toString()
-//   );
-//   //Date type timestamp
-//   record.field4 = extrinsic.block.timestamp;
-//   //Boolean tyep
-//   record.field5 = true;
-//   await record.save();
-// }
