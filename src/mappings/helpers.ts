@@ -2,7 +2,6 @@ import {SubstrateBlock} from "@subql/types";
 import {TheaWithdrawal} from "../types";
 import {u128, u32, u8} from "@polkadot/types-codec";
 import {Status} from "./types";
-import * as utils from "@polkadot/util"
 import {encodeAddress} from "@polkadot/util-crypto";
 
 type WithdrawalStatusConfig = {
@@ -26,7 +25,7 @@ export const updateWithdrawalsStatus = async (params: WithdrawalStatusConfig) =>
             const {amount, assetId, beneficiary, index, network} = readyWithdrawals[i];
             //FIXME: the address of the user should me emitter with the event/ added in ready storage.
             //should not be defaulted to the beneficiary address
-            let user = encodeAddress(beneficiary, 88)
+            let user = encodeAddress(beneficiary.toString(), 88)
             const id = getWithdrawalId({
                 user: user.toString(),
                 withdrawal_nonce: nonce.toString(),
