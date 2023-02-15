@@ -2,7 +2,7 @@ import {SubstrateBlock} from "@subql/types";
 import {TheaWithdrawal} from "../types";
 import {u128, u32, u8} from "@polkadot/types-codec";
 import {Status} from "./types";
-import {encodeAddress} from "@polkadot/util-crypto";
+import {blake2AsHex, encodeAddress} from "@polkadot/util-crypto";
 
 type WithdrawalStatusConfig = {
     network_id: string;
@@ -19,7 +19,7 @@ export const updateWithdrawalsStatus = async (params: WithdrawalStatusConfig) =>
 
     // update the withdrawal status of all these to ready
     const promises = addresses.map(async (addr, i) => {
-        const index = addr + nonce.toString() + i.toString()
+        const index = nonce.toString() + i.toString()
         let withdrawalRecord = await TheaWithdrawal.get(index)
         if (!withdrawalRecord) {
             const {amount, assetId, beneficiary, index, network} = readyWithdrawals[i];
@@ -27,7 +27,6 @@ export const updateWithdrawalsStatus = async (params: WithdrawalStatusConfig) =>
             //should not be defaulted to the beneficiary address
             let user = encodeAddress(beneficiary.toString(), 88)
             const id = getWithdrawalId({
-                user: user.toString(),
                 withdrawal_nonce: nonce.toString(),
                 index: i.toString()
             })
@@ -49,10 +48,9 @@ export const updateWithdrawalsStatus = async (params: WithdrawalStatusConfig) =>
 }
 
 type GetWithdrawalIdParams = {
-    user: string,
     withdrawal_nonce: string,
     index: string
 }
-export const getWithdrawalId = ({user, withdrawal_nonce, index}: GetWithdrawalIdParams) => {
-    return user + withdrawal_nonce + index
+export const getWithdrawalId = ({withdrawal_nonce, index}: GetWithdrawalIdParams) => {
+    return blake2AsHex(withdrawal_nonce + index)
 }

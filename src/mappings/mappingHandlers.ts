@@ -3,7 +3,7 @@ import {Account, TheaDeposit, TheaWithdrawal} from "../types";
 import {AccountId32, Balance, H256} from "@polkadot/types/interfaces";
 import {u128, u32, u8} from "@polkadot/types-codec"
 import {Status} from "./types";
-import {getWithdrawalId, updateWithdrawalsStatus} from "./helpers";
+import {getWithdrawalId} from "./helpers";
 
 const TheaEvents = {
     /// Deposit Approved event ( chain_id, recipient, asset_id, amount, tx_hash(foreign chain))
@@ -57,7 +57,6 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
     } else if (method === TheaEvents.WithdrawalQueued) {
         let [network_id, user, beneficiary, asset_id, amount, withdrawal_nonce, index] = data;
         const id = getWithdrawalId({
-            user: user.toString(),
             withdrawal_nonce: withdrawal_nonce.toString(),
             index: index.toString()
         })
@@ -73,21 +72,25 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
         withdrawalRecord.nonce = withdrawal_nonce.toString()
         withdrawalRecord.network_id = (network_id as u32).toNumber()
         await withdrawalRecord.save();
+
     } else if (method === TheaEvents.WithdrawalReady) {
         let [network_id, nonce] = data;
-        await updateWithdrawalsStatus({
-            network_id: network_id.toString(),
-            nonce: nonce.toString(),
-            status: "READY",
-            block
+        const readyWithdrawals = await api.query.thea.readyWithdrawls(network_id.toString(), nonce.toString());
+        const promises = readyWithdrawals.map(async (e, i) => {
+            let record = await TheaWithdrawal.get(getWithdrawalId({
+                withdrawal_nonce: nonce.toString(),
+                index: i.toString()
+            }))
+            if (!!record) {
+                record.blockHash = block.block.hash.toString()
+                record.status = Status.READY
+                await record.save()
+            }
         })
+        await Promise.all(promises)
     } else if (method === TheaEvents.WithdrawalExecuted) {
         let [nonce, network_id, tx_hash] = data;
-        await updateWithdrawalsStatus({
-            network_id: network_id.toString(),
-            nonce: nonce.toString(),
-            status: "EXECUTED",
-            block
-        })
+        //what fetch first withdrawal and get the block hash?
+
     }
 }

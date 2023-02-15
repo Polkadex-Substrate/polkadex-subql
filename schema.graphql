@@ -60,3 +60,13 @@ type TheaWithdrawal @entity {
 
     nonce: String!
 }
+
+type TransactionsToNetwork @entity {
+
+    id: ID!
+
+    thea_deposits: [TheaDeposit] @derivedFrom(field: "network_id")
+
+    thea_withdrawals: [TheaWithdrawal] @derivedFrom(field: "network_id")
+
+}
