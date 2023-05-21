@@ -16,7 +16,7 @@ schema:
   file: ./schema.graphql
 network:
   # The genesis hash of the network (hash of block 0)
-  chainId: "0x1c71e535179cc3fedc9ca252d3537a371e877174474077f716ef0744d9fcd78d"
+  chainId: "0xb450d810dc1a7d937c820e5d038ac36d436bb3c2051e1821f37fe44a6a7fe2a5"
   # This endpoint must be a public non-pruned archive node
   # Public nodes may be rate limited, which can affect indexing speed
   # When developing your project we suggest getting a private API key
