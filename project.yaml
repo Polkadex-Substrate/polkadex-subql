@@ -35,6 +35,6 @@ dataSources:
         - handler: handleTheaEvents
           kind: substrate/EventHandler
           filter:
-            module: thea
+            module: theaExecutor
 #        - handler: handleCall
 #          kind: substrate/CallHandler
