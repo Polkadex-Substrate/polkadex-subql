@@ -55,8 +55,4 @@ type TheaWithdrawal @entity {
     from: Account!
 
     status: String!
-
-    index: String!
-
-    nonce: String!
 }
