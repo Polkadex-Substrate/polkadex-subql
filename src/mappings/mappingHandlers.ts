@@ -67,8 +67,9 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
 
     } else if (method === TheaEvents.WithdrawalReady) {
         let [network_id] = data;
+        const readyWithdrawals = await api.query.theaExecutor.readyWithdrawals(block.block.header.number, network_id.toString());
+        logger.info("readyWithdrawals", readyWithdrawals)
         // @ts-ignore
-        const readyWithdrawals = await api.query.theaExecutor.readyWithdrawls(block.block.header.number, network_id.toString()).toJSON();
         const promises = readyWithdrawals.map(async (e, _i) => {
             let record = await TheaWithdrawal.get(e.id.toString())
             if (!!record) {
