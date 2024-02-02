@@ -18,6 +18,7 @@ const TheaEvents = {
 }
 
 export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
+    logger.info("SUBSTRATE EVENT: " + JSON.stringify(event));
     const {
         event: {
             data, method, section
@@ -28,41 +29,51 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
 
     //deposit approved by thea relayers
     if (method === TheaEvents.DepositApproved) {
+        logger.info("debug: DepositApproved!");
         let [chain_id, recipient, asset_id, amount, id] = data;
-        let depositRecord = new TheaDeposit((id as Vec<u8>).toString());
         let accountRecord = await Account.get(recipient.toString())
         if (!accountRecord) {
             accountRecord = new Account(recipient.toString())
             await accountRecord.save()
         }
-        depositRecord.amount = (amount as Balance).toBigInt();
-        depositRecord.asset_id = (asset_id as u128).toBigInt();
-        depositRecord.fromId = (recipient as AccountId32).toString();
-        depositRecord.toId = (recipient as AccountId32).toString();
-        depositRecord.network_id = (chain_id as u8).toNumber();
-        depositRecord.status = Status.APPROVED
-        depositRecord.timestamp = block.timestamp.getTime().toString()
-        depositRecord.blockHash = block.block.hash.toString()
+        let depositRecord = new TheaDeposit(
+            (id as Vec<u8>).toString(),
+            block.timestamp.getTime().toString(),
+            block.block.hash.toString(),
+            (chain_id as u8).toNumber(),
+            (amount as Balance).toBigInt(),
+            (asset_id as u128).toBigInt(),
+            (recipient as AccountId32).toString(),
+            (recipient as AccountId32).toString(),
+            Status.READY,
+        )
         await depositRecord.save();
     }
-    //Deposit is claimed on native chain
+
+//Deposit is claimed on native chain
     else if (method === TheaEvents.DepositClaimed) {
         let [_recipient, _asset_id, _amount, id] = data;
         let depositRecord = await TheaDeposit.get((id as Vec<u8>).toString());
+        if(!depositRecord){
+            logger.info("cannot find DepositReady Record!", id);
+            return;
+        }
         depositRecord.status = Status.CLAIMED;
         await depositRecord.save();
     } else if (method === TheaEvents.WithdrawalQueued) {
         let [network_id, user, beneficiary, asset_id, amount, id] = data;
         const withdrawal_id = id.toString()
-        let withdrawalRecord = new TheaWithdrawal(withdrawal_id);
-        withdrawalRecord.amount = (amount as Balance).toBigInt();
-        withdrawalRecord.asset_id = (asset_id as u128).toBigInt();
-        withdrawalRecord.fromId = user.toString();
-        withdrawalRecord.toId = beneficiary.toString();
-        withdrawalRecord.status = Status.QUEUED
-        withdrawalRecord.timestamp = block.timestamp.getTime().toString()
-        withdrawalRecord.blockHash = block.block.hash.toString()
-        withdrawalRecord.network_id = (network_id as u32).toNumber()
+        let withdrawalRecord = new TheaWithdrawal(
+            withdrawal_id,
+            block.timestamp.getTime().toString(),
+            block.block.hash.toString(),
+            (network_id as u32).toNumber(),
+            (amount as Balance).toBigInt(),
+            (asset_id as u128).toBigInt(),
+            beneficiary.toString(),
+            user.toString(),
+            Status.QUEUED,
+        );
         await withdrawalRecord.save();
 
     } else if (method === TheaEvents.WithdrawalReady) {
@@ -79,5 +90,7 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
             }
         })
         await Promise.all(promises)
+    } else {
+        logger.info("UNKNOWN EVENT: THEAHANDLER: ", JSON.stringify(event))
     }
 }

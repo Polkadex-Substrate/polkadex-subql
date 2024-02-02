@@ -22,11 +22,11 @@ type TheaDeposit @entity {
 
     blockHash: String!
 
-    network_id: Int
+    network_id: Int!
 
-    amount: BigInt
+    amount: BigInt!
 
-    asset_id: BigInt
+    asset_id: BigInt!
 
     to: Account!
 
@@ -44,11 +44,11 @@ type TheaWithdrawal @entity {
 
     blockHash: String!
 
-    network_id: Int
+    network_id: Int!
 
     amount: BigInt!
 
-    asset_id: BigInt
+    asset_id: BigInt!
 
     to: Account!
 
