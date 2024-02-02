@@ -45,21 +45,23 @@ export async function handleTheaEvents(event: SubstrateEvent): Promise<void> {
             (asset_id as u128).toBigInt(),
             (recipient as AccountId32).toString(),
             (recipient as AccountId32).toString(),
-            Status.READY,
+            Status.APPROVED,
         )
         await depositRecord.save();
     }
 
 //Deposit is claimed on native chain
     else if (method === TheaEvents.DepositClaimed) {
-        let [_recipient, _asset_id, _amount, id] = data;
-        let depositRecord = await TheaDeposit.get((id as Vec<u8>).toString());
-        if(!depositRecord){
-            logger.info("cannot find DepositReady Record!", id);
-            return;
-        }
-        depositRecord.status = Status.CLAIMED;
-        await depositRecord.save();
+        // this method will be depricated
+
+        // let [_recipient, _asset_id, _amount, id] = data;
+        // let depositRecord = await TheaDeposit.get((id as Vec<u8>).toString());
+        // if(!depositRecord){
+        //     logger.info("cannot find DepositReady Record!", id);
+        //     return;
+        // }
+        // depositRecord.status = Status.CLAIMED;
+        // await depositRecord.save();
     } else if (method === TheaEvents.WithdrawalQueued) {
         let [network_id, user, beneficiary, asset_id, amount, id] = data;
         const withdrawal_id = id.toString()
